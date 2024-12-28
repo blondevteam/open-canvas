@@ -8,7 +8,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Open Canvas",
-  description: "Open Canvas Chat UX by LangChain",
+  description: "Open Canvas to edit KnowledgeBase",
 };
 
 export default function RootLayout({
@@ -17,8 +17,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true} className={inter.className}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,11 +1,14 @@
+import { NotebookPen, SearchIcon } from "lucide-react";
+
 import { ProgrammingLanguageOptions } from "@/types";
 import { ThreadPrimitive, useThreadRuntime } from "@assistant-ui/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { TighterText } from "../ui/header";
-import { NotebookPen } from "lucide-react";
-import { ProgrammingLanguagesDropdown } from "../ui/programming-lang-dropdown";
+// import { ProgrammingLanguagesDropdown } from "../ui/programming-lang-dropdown";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { getArticles } from "@/actions/articles";
 
 interface QuickStartButtonsProps {
   handleQuickStart: (
@@ -76,16 +79,57 @@ const QuickStartPrompts = () => {
 };
 
 const QuickStartButtons = (props: QuickStartButtonsProps) => {
-  const handleLanguageSubmit = (language: ProgrammingLanguageOptions) => {
-    props.handleQuickStart("code", language);
+  const [query, setQuery] = useState("");
+  const [articles, setArticles] = useState<Article[]>([]);
+  // const handleLanguageSubmit = (language: ProgrammingLanguageOptions) => {
+  //   props.handleQuickStart("code", language);
+  // };
+  const onSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) =>
+    setQuery(e.target.value);
+
+  const onSearchKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      await onSearch();
+    }
+  };
+  const onSearch = async () => {
+    if (!query) return;
+    const res = await getArticles({ query });
+    // console.log(res);
+    setArticles(res);
   };
 
   return (
     <div className="flex flex-col gap-8 items-center justify-center w-full">
       <div className="flex flex-col gap-6">
-        <p className="text-gray-600 text-sm">Start with a blank canvas</p>
+        <p className="text-gray-600 text-sm">Edit existing articles</p>
         <div className="flex flex-row gap-1 items-center justify-center w-full">
+          <Input
+            type="text"
+            placeholder="Search for an article"
+            className="w-[250px]"
+            onChange={onSearchChange}
+            onKeyDown={onSearchKeyDown}
+          />
           <Button
+            variant="outline"
+            size="icon"
+            className="my-2.5 size-8 p-2 transition-opacity ease-in"
+            onClick={onSearch}
+          >
+            <SearchIcon />
+          </Button>
+        </div>
+
+        {articles.length > 0 && (
+          <div className="flex flex-row gap-1 items-center justify-center w-full">
+            <div className="flex flex-col gap-2">
+              <p>Search results:</p>
+              {articles.map((article, i) => (
+                <p key={i}>{article.title}</p>
+              ))}
+            </div>
+            {/* <Button
             variant="outline"
             className="transition-colors text-gray-600 flex items-center justify-center gap-2 w-[250px] h-[64px]"
             onClick={() => props.handleQuickStart("text")}
@@ -93,12 +137,13 @@ const QuickStartButtons = (props: QuickStartButtonsProps) => {
             <TighterText>New Markdown</TighterText>
             <NotebookPen />
           </Button>
-          <ProgrammingLanguagesDropdown handleSubmit={handleLanguageSubmit} />
-        </div>
+          <ProgrammingLanguagesDropdown handleSubmit={handleLanguageSubmit} /> */}
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-6 mt-2 w-full">
         <p className="text-gray-600 text-sm">or with a message</p>
-        <QuickStartPrompts />
+        {/* <QuickStartPrompts /> */}
         {props.composer}
       </div>
     </div>

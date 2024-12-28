@@ -747,61 +747,62 @@ export function GraphProvider({ children }: { children: ReactNode }) {
       setIsStreaming(false);
     }
 
-    if (runId) {
-      // Chain `.then` to not block the stream
-      shareRun(runId).then(async (sharedRunURL) => {
-        setMessages((prevMessages) => {
-          const newMsgs = prevMessages.map((msg) => {
-            if (
-              msg.id === followupMessageId &&
-              !(msg as AIMessage).tool_calls?.find(
-                (tc) => tc.name === "langsmith_tool_ui"
-              )
-            ) {
-              const toolCall = {
-                name: "langsmith_tool_ui",
-                args: { sharedRunURL },
-                id: sharedRunURL
-                  ?.split("https://smith.langchain.com/public/")[1]
-                  .split("/")[0],
-              };
-              const castMsg = msg as AIMessage;
-              const newMessageWithToolCall = new AIMessage({
-                ...castMsg,
-                content: castMsg.content,
-                id: castMsg.id,
-                tool_calls: castMsg.tool_calls
-                  ? [...castMsg.tool_calls, toolCall]
-                  : [toolCall],
-              });
-              return newMessageWithToolCall;
-            }
-
-            return msg;
-          });
-          return newMsgs;
-        });
-
-        // if (threadId && lastMessage && lastMessage.id) {
-        //   // Update the state of the last message to include the run URL
-        //   // for proper rendering when loading history.
-        //   const newMessages = [new RemoveMessage({ id: lastMessage.id }), new AIMessage({
-        //     ...lastMessage,
-        //     content: lastMessage.content,
-        //     response_metadata: {
-        //       ...lastMessage.response_metadata,
-        //       langSmithRunURL: sharedRunURL,
-        //     }
-        //   })];
-        //   await client.threads.updateState(threadId, {
-        //     values: {
-        //       messages: newMessages
-        //     },
-        //   });
-        //   const newState = await client.threads.getState(threadId);
-        // }
-      });
+    if (!runId) {
+      return;
     }
+    // Chain `.then` to not block the stream
+    shareRun(runId).then(async (sharedRunURL) => {
+      setMessages((prevMessages) => {
+        const newMsgs = prevMessages.map((msg) => {
+          if (
+            msg.id === followupMessageId &&
+            !(msg as AIMessage).tool_calls?.find(
+              (tc) => tc.name === "langsmith_tool_ui"
+            )
+          ) {
+            const toolCall = {
+              name: "langsmith_tool_ui",
+              args: { sharedRunURL },
+              id: sharedRunURL
+                ?.split("https://smith.langchain.com/public/")[1]
+                .split("/")[0],
+            };
+            const castMsg = msg as AIMessage;
+            const newMessageWithToolCall = new AIMessage({
+              ...castMsg,
+              content: castMsg.content,
+              id: castMsg.id,
+              tool_calls: castMsg.tool_calls
+                ? [...castMsg.tool_calls, toolCall]
+                : [toolCall],
+            });
+            return newMessageWithToolCall;
+          }
+
+          return msg;
+        });
+        return newMsgs;
+      });
+
+      // if (threadId && lastMessage && lastMessage.id) {
+      //   // Update the state of the last message to include the run URL
+      //   // for proper rendering when loading history.
+      //   const newMessages = [new RemoveMessage({ id: lastMessage.id }), new AIMessage({
+      //     ...lastMessage,
+      //     content: lastMessage.content,
+      //     response_metadata: {
+      //       ...lastMessage.response_metadata,
+      //       langSmithRunURL: sharedRunURL,
+      //     }
+      //   })];
+      //   await client.threads.updateState(threadId, {
+      //     values: {
+      //       messages: newMessages
+      //     },
+      //   });
+      //   const newState = await client.threads.getState(threadId);
+      // }
+    });
   };
 
   const setSelectedArtifact = (index: number) => {

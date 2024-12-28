@@ -121,7 +121,7 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
         )}
         <ThreadPrimitive.Messages
           components={{
-            UserMessage: UserMessage,
+            UserMessage,
             AssistantMessage: (prop) => (
               <AssistantMessage
                 {...prop}
